@@ -1,0 +1,1517 @@
+
+Shahar Shwartz  12:32 PM
+
+create a node-server repo in github.
+create a NodeJS server with the following endpoints:
+/ -> for home page
+/about -> for about page
+contact -> for contact page
+as we saw in class we can send in the response HTML and the browser will parse it and present it to the user!
+I want you to send HTML as a string with a nav bar and some buttons to move to other routes (home, about, contact) and see how it change the content of each page below.
+*** BONUS ***
+create a 404 error page (page not found) if the user is trying to get to other url then expected.
+create a real HTML file and serve it to the user!
+HINT: use the fs module from NodeJS.
+
+
+
+
+
+effi malach  10:21 PM
+https://github.com/effimalach/node-server
+effimalach/node-server
+Language
+JavaScript
+Last updated
+2 minutes ago
+Added by GitHub
+
+
+
+Ophir Bucai  8:04 PM
+  :dizzy:
+ophirbucai/node-server
+Language
+HTML
+Last updated
+a minute ago
+Added by GitHub
+
+
+
+
+michael baliasny  4:34 PM
+https://github.com/Bilge-Boy/node-server
+Bilge-Boy/node-server
+Language
+HTML
+Last updated
+a few seconds ago
+Added by GitHub
+
+
+Nicole Tsingauz  1:33 PM
+https://github.com/nicolets/node-server
+nicolets/node-server
+Language
+JavaScript
+Last updated
+a few seconds ago
+Added by GitHub
+
+
+Gilad Dolev  1:50 PM
+https://github.com/gildolev/simple-node-server
+gildolev/simple-node-server
+Language
+JavaScript
+Last updated
+a minute ago
+Added by GitHub
+
+
+Ran Malki  4:32 PM
+joined #backend.
+
+
+Ran Malki  4:52 PM
+https://github.com/ranmalki/node-server
+ranmalki/node-server
+Language
+JavaScript
+Last updated
+a few seconds ago
+Added by GitHub
+
+
+Ron Mikles  6:06 PM
+https://realclass.io/room/pvwr10epm
+
+
+Daniel Nuri  6:06 PM
+joined #backend.
+
+
+Nicole Tsingauz  5:01 PM
+https://us02web.zoom.us/j/88595044358?pwd=NTVqdkIxMC94YzBwbTlYVDZkNW5oZz09
+Password: 635838
+
+
+Shahar Shwartz  6:17 PM
+const user = {
+    name: 'shahar',
+    email: 'shahar@gmail.com',
+    password: '123456'
+}
+
+
+let users = [];
+
+/*
+    given an interface of user (from above) make the following functions:
+    add, delete, get, update
+*/
+
+function add(user) {
+    const foundUser = getUser(user.email);
+    if (!foundUser) {
+        const newUser = {
+            name: user.name,
+            email: user.email,
+            password: user.password
+        }
+        users.push(newUser);
+    }
+}
+
+function getUser(email) {
+    const foundUser = users.find(existingUser => existingUser.email === email);
+    return foundUser;
+}
+
+function deleteUser(email) {
+    users = users.filter(existingUser => existingUser.email !== email);
+}
+
+function update(email, data) {
+    const foundUser = getUser(email);
+    if (!foundUser) return;
+    Object.keys(foundUser).forEach(key => {
+        if (data[key]) {
+            foundUser[key] = data[key];
+        }
+    });
+}
+
+function getAll() {
+    return users;
+}
+
+
+Yoav Hevroni  6:37 PM
+joined #backend.
+
+
+Shahar Shwartz  6:39 PM
+https://realclass.io/room/ojil5geqs
+
+
+Shahar Shwartz  6:44 PM
+// const user = {
+//     name: 'shahar',
+//     email: 'shahar@gmail.com',
+//     password: '123456'
+// }
+
+let users = [];
+
+/*
+    given an interface of user (from above) make the following functions:
+    add, delete, get, update
+*/
+
+function add(user) {
+    const foundUser = getUser(user.email);
+    if (!foundUser) {
+        const newUser = {
+            name: user.name,
+            email: user.email,
+            password: user.password
+        }
+        users.push(newUser);
+    }
+}
+
+function getUser(email) {
+    const foundUser = users.find(existingUser => existingUser.email === email);
+    return foundUser;
+}
+
+function deleteUser(email) {
+    users = users.filter(existingUser => existingUser.email !== email);
+}
+
+function update(email, data) {
+    const foundUser = getUser(email);
+    if (!foundUser) return;
+    Object.keys(foundUser).forEach(key => {
+        if (data[key]) {
+            foundUser[key] = data[key];
+        }
+    });
+}
+
+function getAll() {
+    return users;
+}
+
+module.exports = {
+    update,
+    getAll,
+    getUser,
+    deleteUser,
+    add
+}
+
+
+Shahar Shwartz  6:50 PM
+const express = require('express');
+const userService = require('./index');
+const app = express();
+const port = 8080;
+
+app.use(express.json());
+
+// Get all users
+app.get('/user', (req, res) => {
+    const users = userService.getAll();
+    res.send(users);
+})
+
+// Get a specific user
+app.get('/user/:email', (req, res) => { // user/shahar@gmail.com
+    const { email } = req.params;
+    const user = userService.getUser(email);
+    if (!user) {
+        res.status(404).send();
+    } else {
+        res.send(user);
+    }
+})
+
+// Create a user
+app.post('/user', (req, res) => { // add a user
+    const user = req.body;
+    console.log(req.body)
+    if (user.email && user.password && user.name) {
+        const success = userService.add(user);
+        if (success) {
+            res.status(201).send('User added successfully');
+        } else {
+            res.status(203).send('Rejected')
+        }
+    } else {
+        res.status(203).send('Rejected')
+    }
+})
+
+// Delete a user
+app.delete('/user/:email', (req, res) => {
+    const { email } = req.params;
+    userService.deleteUser(email);
+    res.send();
+})
+
+// Update a user
+app.put('/user/:email', (req, res) => {
+    const toUpdate = req.body;
+    const { email } = req.params;
+    const updatedUser = userService.update(email, toUpdate);
+    if (updatedUser) {
+        res.send(updatedUser);
+    } else {
+        res.status(400).send();
+    }
+})
+
+app.listen(port, () => {
+    console.log(`listening at http://localhost:${port}`)
+})
+(edited)
+
+
+Hani Shnek  7:32 PM
+joined #backend.
+
+
+Shahar Shwartz  11:23 AM
+this is the repo for the first express server
+https://github.com/podran/express_quick_start
+H.W. will be given in a few hours...good luck!
+podran/express_quick_start
+Language
+JavaScript
+Last updated
+a minute ago
+Added by GitHub
+
+
+Shahar Shwartz  4:50 PM
+HOMEWORK!!!
+yesterday we learned what is a service and how it connects to REST API,
+fork the repo above and add another entity to the server called Coupon.
+Create a whole REST API with Express and coupon.json as your db.
+The API is for coupon codes. Every coupon needs to have to following properties:
+code - the coupon code
+date - the time that the coupon was created
+isRedeem - if the coupon has been used already or not
+The API should support:
+POST /coupon - create a new coupon
+GET /coupon - list all of the coupons
+GET /coupon/:code - return a coupon
+PUT /coupon/:code - edit a coupon
+DELETE /coupon/:code - delete a coupon
+Additionally, your API needs to support:
+POST /coupon/:code/redeem - Redeems the coupon code. If the coupon has been redeemed before already, return status code 400.
+BONUS (Optional!):
+GET /coupon/search/:code - returns if a certain coupon code exists or not (200/404). (edited) 
+
+
+michael baliasny  5:57 PM
+https://github.com/Bilge-Boy/express_quick_start :admission_tickets:
+Bilge-Boy/express_quick_start
+Language
+JavaScript
+Last updated
+2 minutes ago
+Added by GitHub
+
+
+Gilad Dolev  4:48 PM
+https://github.com/gildolev/coupons
+gildolev/coupons
+Language
+JavaScript
+Last updated
+a minute ago
+Added by GitHub
+
+
+Shahar Shwartz  6:57 PM
+for our next lesson i will need you to install mongoDB from this link:
+https://www.mongodb.com/try/download/community
+MongoDBMongoDB
+MongoDB Community Download
+Download the Community version of MongoDB's non-relational database server from MongoDB's download center. (4 kB)
+https://www.mongodb.com/try/download/community
+
+
+
+Amit Guzi  1:00 AM
+https://github.com/AmitGuzi/express_quick_start
+AmitGuzi/express_quick_start
+Language
+JavaScript
+Last updated
+11 minutes ago
+Added by GitHub
+
+
+effi malach  2:52 AM
+https://github.com/effimalach/express_quick_start
+effimalach/express_quick_start
+Language
+JavaScript
+Last updated
+a minute ago
+Added by GitHub
+
+
+Ron Mikles  3:42 AM
+https://github.com/ron33333/node-server
+ron33333/node-server
+Language
+HTML
+Last updated
+13 minutes ago
+Added by GitHub
+
+
+Shahar Shwartz  5:04 PM
+https://realclass.io/room/b28ms9t1m
+
+
+Shahar Shwartz  5:38 PM
+https://github.com/podran/node-mongo-library
+podran/node-mongo-library
+Last updated
+an hour ago
+Forks
+2
+Added by GitHub
+
+
+Shahar Shwartz  5:51 PM
+brew services start mongodb-community
+5:52
+https://github.com/mongodb/homebrew-brew
+mongodb/homebrew-brew
+The Official MongoDB Software Homebrew Tap
+Website
+https://www.mongodb.com
+Stars
+677
+Added by GitHub
+
+
+Shahar Shwartz  7:22 PM
+https://mongodb.github.io/node-mongodb-native/4.0/
+mongodb.github.io
+mongodb
+Documentation for mongodb
+7:27
+https://docs.mongodb.com/drivers/node/current/quick-start/
+docs.mongodb.comdocs.mongodb.com
+Quick Start (4 kB)
+https://docs.mongodb.com/drivers/node/current/quick-start/
+
+
+
+Ophir Bucai  7:34 PM
+const { MongoClient } = require("mongodb");
+const uri = "localhost:27017";
+const client = new MongoClient(uri);
+async function connect() {
+    await client.connect();
+    const database = client.db('mongo-first');
+    const movies = database.collection('movies');
+    const query = { title: 'Back to the Future'};
+    const movie = await movies.insertOne(query);
+    console.log(movie);
+}
+
+module.exports = {
+    connect
+}
+
+
+Shahar Shwartz  7:35 PM
+mongodb://localhost:27017
+
+
+Shahar Shwartz  7:40 PM
+https://realclass.io/room/3251uagju
+
+
+Shahar Shwartz  8:19 PM
+const fs = require('fs');
+const { usersCollection } = require('../db');
+
+function add(user) {
+    const foundUser = getUser(user.email);
+    const users = getUsers();
+    if (!foundUser) {
+        const newUser = {
+            name: user.name,
+            email: user.email,
+            password: user.password
+        }
+        users.push(newUser);
+        setUsers(users);
+        return true;
+    }
+    return false;
+}
+
+function getUser(email) {
+    const users = getUsers();
+    const foundUser = users.find(existingUser => existingUser.email === email);
+    return foundUser;
+}
+
+function deleteUser(email) {
+    const users = getUsers();
+    const filteredUsers = users.filter(existingUser => existingUser.email !== email);
+    setUsers(filteredUsers);
+}
+
+function update(email, data) {
+    const users = getUsers();
+    const foundUser = users.find(existingUser => existingUser.email === email);
+    if (!foundUser) return false;
+    Object.keys(foundUser).forEach(key => {
+        if (data[key]) {
+            foundUser[key] = data[key];
+        }
+    });
+    setUsers(users);
+    return foundUser;
+}
+
+async function getAll() {
+    return await usersCollection().find({}).toArray();
+}
+
+module.exports = {
+    update,
+    getAll,
+    getUser,
+    deleteUser,
+    add
+}
+(edited)
+
+
+Shahar Shwartz  8:32 PM
+db.js
+const { MongoClient } = require("mongodb");
+// Replace the uri string with your MongoDB deployment's connection string.
+const uri = 'mongodb://localhost:27017';
+const client = new MongoClient(uri);
+let users;
+
+async function connect() {
+    await client.connect();
+    console.log('mongo db is connected');
+
+    const database = client.db('mongo-first');
+    users = database.collection('users');
+}
+
+function usersCollection() {
+    return users;
+}
+
+module.exports = {
+    connect,
+    usersCollection
+}
+
+
+Yarin  1:45 AM
+H.W last week
+https://github.com/Yarinvanzikri/express_quick_start
+
+Yarinvanzikri/express_quick_start
+Language
+JavaScript
+Last updated
+a minute ago
+Added by GitHub
+
+
+Nicole Tsingauz  6:15 PM
+https://github.com/nicolets/express_quick_start
+nicolets/express_quick_start
+Language
+JavaScript
+Last updated
+a few seconds ago
+Added by GitHub
+
+
+Nicole Tsingauz  8:35 PM
+h.w for tomorrow:
+https://github.com/nicolets/express_quick_start
+--> I know the update function is incorrect
+nicolets/express_quick_start
+Language
+JavaScript
+Last updated
+4 minutes ago
+Added by GitHub
+
+
+Gilad Dolev  5:38 PM
+https://github.com/gildolev/mongo_crud
+gildolev/mongo_crud
+Language
+JavaScript
+Last updated
+a minute ago
+Added by GitHub
+
+
+effi malach  5:52 PM
+HW
+https://github.com/effimalach/express_quick_start (edited) 
+effimalach/express_quick_start
+Language
+JavaScript
+Last updated
+3 minutes ago
+Added by GitHub
+
+
+Alon Sela  4:24 PM
+First lesson HW
+https://github.com/alondgr/first-server
+alondgr/first-server
+Language
+HTML
+Last updated
+3 minutes ago
+Added by GitHub
+
+
+Shahar Shwartz  5:20 PM
+https://us02web.zoom.us/j/82213095551?pwd=ZVNodHQwSHRQM3ZKZURESnJ2cG9mZz09
+5:21
+נא להיכנס לכאן
+
+
+Shahar Shwartz  5:35 PM
+employee {
+rank: 'medic' or 'paramedic' or 'driver',
+name: string,
+available: boolean
+}
+
+call {
+priority: 1 or 2 or 3,
+createdAt: date,
+ambulanceId: objectId
+}
+
+ambulance {
+taskForce: Array (employees),
+available: boolean
+}
+(edited)
+5:36
+https://realclass.io/room/xeyc8zdfc
+
+
+Shahar Shwartz  5:42 PM
+https://danielmiessler.com/study/difference-between-uri-url/
+Daniel MiesslerDaniel Miessler
+What's the Difference Between a URI and a URL?
+A URI is an Identifier—like a specific document, book, or website—and a URL is an identifier that also tells you how to access it, such as…
+Est. reading time
+6 minutes
+https://danielmiessler.com/study/difference-between-uri-url/
+
+5:44
+const { MongoClient } = require("mongodb");
+// Replace the uri string with your MongoDB deployment's connection string.
+const uri ="mongodb://localhost:27017";
+const client = new MongoClient(uri);
+let users;
+let coupons;
+
+
+async function connect() {
+    await client.connect();
+    console.log('mongo is connected')
+
+    const database = client.db('mongo-first');
+    users = database.collection('users');
+    coupons = database.collection('coupons');
+
+    
+}
+
+function usersCollection() {
+    return users;   
+}
+
+function couponsCollection() {
+    return coupons;   
+}
+
+module.exports = {
+    connect,
+    usersCollection,
+    couponsCollection
+}
+
+
+Shahar Shwartz  6:12 PM
+insertOne( { item: “card”, qty: 15 } );
+
+
+Shahar Shwartz  6:42 PM
+GET /entity - get all entity
+GET /entity/:id - get specific entity by id
+POST /entity - create a new entity
+PUT /entity/:id - edit an existing entity
+DELETE /entity/:id - delete an existing entity
+6:45
+CRUD
+6:45
+GET /entity/:id/entity2 (edited) 
+6:46
+post/1235/comment
+
+
+Shahar Shwartz  7:38 PM
+var ObjectId = require(‘mongodb’).ObjectId;
+7:38
+const foundCoupon = await coupon.findOne({“_id”:ObjectId(id)});
+
+
+Shahar Shwartz  8:05 PM
+https://docs.mongodb.com/drivers/node/current/usage-examples/updateOne/
+docs.mongodb.comdocs.mongodb.com
+Update a Document (4 kB)
+https://docs.mongodb.com/drivers/node/current/usage-examples/updateOne/
+
+
+
+Yarin  8:55 PM
+https://github.com/Yarinvanzikri/Mada-StartingPoint
+
+Yarinvanzikri/Mada-StartingPoint
+Language
+JavaScript
+Last updated
+a few seconds ago
+Added by GitHub
+
+
+Yarin  6:52 PM
+https://github.com/Yarinvanzikri/Mada-Finished
+
+Yarinvanzikri/Mada-Finished
+Language
+JavaScript
+Last updated
+a few seconds ago
+Added by GitHub
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Shahar Shwartz  6:10 PM
+post
+{
+ title: string,
+likes: number,
+createdAt: date
+}
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+6:11
+comment
+{
+ content: string,
+createdAt: date,
+author: string,
+postId: ObjectId
+}
+(edited)
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+6:14
+https://realclass.io/room/lffw2u0d4
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+6:15
+https://mongoosejs.com/docs/index.html
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Shahar Shwartz  5:43 PM
+https://realclass.io/room/segn5uo4j
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+
+
+ -------------------------------------------------------------------------------
+ ===============================================================================
+ ----------------------------FINAL - PROJECT------------------------------------
+
+
+
+Evyatar Rosner  5:03 PM
+joined #final-project.
+
+
+Evyatar Rosner  5:03 PM
+https://realclass.io/room/5ah7exz4s
+
+
+Yarin  5:03 PM
+joined #final-project along with 11 others.
+
+
+Evyatar Rosner  5:04 PM
+renamed the channel from “final_project” to “final-project”
+
+
+Gilad Dolev  5:08 PM
+joined #final-project along with Alon Sela.
+
+
+Evyatar Rosner  5:41 PM
+npx create-react-app instagram-ui
+
+
+Daniel Nuri  5:43 PM
+joined #final-project along with tamir segal.
+
+
+Evyatar Rosner  6:34 PM
+const express = require('express');
+const app = express();
+const port = 4000;
+
+
+app.listen(port, () => {
+    console.log(`App listening at http://localhost:${port}`)
+})
+
+
+Yair Roznitsky  6:34 PM
+joined #final-project.
+
+
+Evyatar Rosner  6:38 PM
+https://mongoosejs.com/
+6:41
+mongoose.connect('mongodb://localhost:27017/instagram')
+    .then(() => {
+        app.listen(port, () => {
+            console.log(`App listening at http://localhost:${port}`)
+        });
+    });
+
+
+Evyatar Rosner  6:54 PM
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+
+});
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;
+
+
+Ophir Bucai  7:59 PM
+joined #final-project.
+
+
+Evyatar Rosner  8:27 PM
+npm i node-sass -D
+
+
+Evyatar Rosner  2:10 PM
+Hi everyone! :blush:
+Yesterday we started to work on the final project which will represent everything we learned.
+Here are the permanent links to my repos so you get keep tracks of changes:
+API: https://github.com/evyros/instagram-api
+UI: https://github.com/evyros/instagram-ui
+No homework this time.
+See you all on Monday (Shahar and I switch back) :v::blush:
+evyros/instagram-api
+Language
+JavaScript
+Last updated
+3 minutes ago
+Added by GitHub
+evyros/instagram-ui
+Language
+HTML
+Last updated
+3 minutes ago
+Added by GitHub
+
+
+Yarin  2:30 PM
+you told us we will get some kind of layout for the registration page design, should we just do that free handed?
+
+1 reply
+7 months agoView thread
+
+
+michael baliasny  3:24 PM
+joined #final-project.
+
+
+michael baliasny  3:25 PM
+איזה התרגשות
+
+
+Evyatar Rosner  5:03 PM
+https://realclass.io/room/x7grcldcq
+
+
+Evyatar Rosner  6:14 PM
+https://meyerweb.com/eric/tools/css/reset/
+meyerweb.commeyerweb.com
+meyerweb.com
+The web home of Eric A. Meyer, CSS guy; and his wife Kathryn, doctor of nursing.
+
+
+Evyatar Rosner  6:20 PM
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;400;700&display=swap" rel="stylesheet">
+
+
+Evyatar Rosner  9:48 PM
+Hi everyone! :blush: We are back on track.
+Today we made progress with our final project and finished the registration.
+In addition, we covered new subjects and conventions:
+Services for fetching
+Config (for the apiUrl)
+CSS reset
+We saw how frontend & backend work together
+Homework:
+Design the registration page. Only the registration page, don’t continue with other pages yet.
+During the registration, when a user enters his username, we should show him an error in case the username is already taken (see attached image). Explore how you can do this with Yup and a backend route. Come to Tirgul if needed.
+I pushed the changes to my Github repos:
+API: https://github.com/evyros/instagram-api
+UI: https://github.com/evyros/instagram-ui
+See you next Monday :v::blush:
+image.png 
+image.png
+
+
+evyros/instagram-api
+Language
+JavaScript
+Last updated
+a few seconds ago
+Added by GitHub
+evyros/instagram-ui
+Language
+JavaScript
+Last updated
+a few seconds ago
+Added by GitHub
+
+2 replies
+Last reply 7 months agoView thread
+
+
+Shahar Shwartz  5:44 PM
+https://realclass.io/room/segn5uo4j
+
+
+Shahar Shwartz  6:14 PM
+{
+        useUnifiedTopology: true,
+        useNewUrlParser: true,
+        useCreateIndex: true, //make this true
+        autoIndex: true, //make this also true
+    }
+
+
+Shahar Shwartz  6:30 PM
+async function login(req, res) {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        res.status(403).send();
+        return;
+    }
+    const userExist = await User.findOne({ username, password });
+    if (!userExist) {
+        res.status(403).send();
+        return;
+    }
+    res.json(userExist);
+}
+
+
+Shahar Shwartz  8:14 PM
+https://www.npmjs.com/package/jsonwebtoken
+npmnpm
+jsonwebtoken
+JSON Web Token implementation (symmetric and asymmetric)
+
+
+Shahar Shwartz  8:34 PM
+authorization
+
+
+Shahar Shwartz  8:43 PM
+try {
+  var decoded = jwt.verify(token, 'wrong-secret');
+} catch(err) {
+  // err
+}
+
+
+Evyatar Rosner  5:03 PM
+https://realclass.io/room/qvzfyrbbo
+
+
+Shahar Shwartz  5:39 PM
+נא להיכנס השיעור התחיל
+
+
+Shahar Shwartz  5:52 PM
+https://realclass.io/room/nrnestlli
+
+
+Shahar Shwartz  6:55 PM
+post controller
+const Post = require("../models/post.js");
+
+
+async function create(req, res) {
+    const { body } = req.body;
+    const tempPost = {
+        body,
+        author: '123456' 
+    }
+    const post = new Post(tempPost);
+    try {
+        const savedPost = await post.save();
+        res.status(201).send(savedPost);
+    } catch (err) {
+        console.log(err)
+        res.status(400).json({ message: 'Could not save post' });
+    }
+}
+
+module.exports = {
+    create
+}
+
+
+Shahar Shwartz  7:34 PM
+post model
+const mongoose = require('mongoose');
+
+const postScheme = new mongoose.Schema({
+    body: {
+        type: String,
+        required: true,
+    },
+    likes: {
+        type: Array,
+        default: () => []
+    },
+    author: {
+        type: String,
+        required: true,
+    },
+    createdAt: {
+        type: Date,
+        default: () => new Date()
+    },
+    image: {
+        type: String
+    }
+});
+
+const Post = mongoose.model('post', postScheme);
+
+module.exports = Post;
+
+
+Shahar Shwartz  8:35 AM
+HOME WORK!!!
+in class we made an api call to get all posts and watch it on Feed page.
+Make a new common component called Post and design it (you can get inspiration from instagram but feel free to be creative).
+map posts on the feed page using Post.
+
+
+Shahar Shwartz  6:48 PM
+https://coolors.co
+palette of colors for picks :)
+Coolors.coCoolors.co
+Coolors - The super fast color schemes generator!
+Generate or browse beautiful color combinations for your designs. (66 kB)
+https://coolors.co/
+
+
+
+Evyatar Rosner  5:01 PM
+https://realclass.io/room/cu0x0gflf
+
+
+Evyatar Rosner  6:01 PM
+.
+6:01
+.
+6:01
+https://realclass.io/room/ory1qta7q
+
+
+Evyatar Rosner  12:45 PM
+Hi everyone! :blush:
+In our lesson yesterday, we finish the file upload for CreatePost page.
+Here are some ideas for how to proceed with the project on your own:
+Image preview after selecting a file
+Image crop
+Filters for uploaded image
+Edit Profile page
+Enjoy :muscle::blush:
+
+
+Shahar Shwartz  5:03 PM
+https://realclass.io/room/d1yvcqouf
+5:04
+https://realclass.io/room/4icc3iv8k
+
+
+Shahar Shwartz  5:30 PM
+Menu:
+create a menu for the app on the header.
+it will be composed out of <nav> <ul> and <li>.
+create a post
+feed
+profile page
+(edited)
+
+
+Shahar Shwartz  5:38 PM
+https://stackoverflow.com/questions/13367868/how-to-modify-the-fill-color-of-an-svg-image-when-being-served-as-background-ima
+Stack OverflowStack Overflow
+How to modify the fill color of an SVG image when being served as background image?
+Placing the SVG output directly inline with the page code I am able to simply modify fill colors with CSS like so: polygon.mystar { fill: blue; }​ circle.mycircle { fill: green; } This w...
+5:38
+.icon {
+    background-color: red;
+    -webkit-mask-image: url(icon.svg);
+    mask-image: url(icon.svg);
+}
+
+
+Shahar Shwartz  5:46 PM
+https://fontawesome.com/v5.15/how-to-use/on-the-web/using-with/react
+Font AwesomeFont Awesome
+Font Awesome
+The world’s most popular and easiest to use icon set just got an upgrade. More icons. More styles. More Options.
+
+
+Shahar Shwartz  5:55 PM
+npm config set registry https://registry.npmjs.org/
+5:58
+rm ~/.npmrc
+6:03
+'@fortawesome/react-fontawesome'
+
+
+Shahar Shwartz  7:38 PM
+async function getUser(username) {
+	const token = localStorage.getItem('token');
+	if (!token) {
+		return {};
+	}
+	const res = await fetch(config.apiUrl + '/user/' + username, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			'Authorization': token
+		}
+	});
+	return res.json();
+}
+
+
+Shahar Shwartz  8:40 PM
+profile header
+import React, { useEffect, useState } from 'react';
+import Avatar from '../../common/Avatar/Avatar';
+import { getUser } from '../../services/user.service'
+
+function ProfileHeader({ username, postNum }) {
+	const [user, setUser] = useState({});
+	
+	useEffect(() => {
+		async function initUser() {
+			const user = await getUser(username);
+			setUser(user);
+		}
+		initUser();
+	}, [username]);
+
+	return (
+		<div className="profile__header">
+			<div className="profile__avatar"><Avatar image={user.image} size="lg" /></div>
+			<div>
+				<h2>{user.username}</h2>
+				<p>{postNum} posts</p>
+			</div>
+		</div>
+	);
+}
+
+export default ProfileHeader;
+8:40
+profile
+<div className="profile">
+            <ProfileHeader username={username} postNum={posts.length} />
+            <h2>posts</h2>
+            <div className="profile__posts">
+                {posts.map(post => (
+                    <Post key={post._id} data={post} />
+                ))}
+            </div>
+        </div>
+
+
+Shahar Shwartz  9:10 PM
+H.W.
+finish designing the Profile page + responsive design in the feed and profile.
+P.S. for those who just listened, everything has been uploaded to the repo so you can catch up.
+
+
+Evyatar Rosner  4:58 PM
+---
+---
+https://realclass.io/room/5khd0p62n
+
+
+Evyatar Rosner  10:17 PM
+Hi everyone! :blush:
+On our lesson today, we completed:
+Search page
+PropTypes for Avatar
+Learned how to use Date
+Homework:
+Design search page
+Add debounce mechanism to search input in order to fire a request only when needed
+I pushed the changes to my Github repos:
+API: https://github.com/evyros/instagram-api
+UI: https://github.com/evyros/instagram-ui
+See you on Wednesday (Hackathon!) :muscle::blush:
+evyros/instagram-api
+Language
+JavaScript
+Last updated
+2 minutes ago
+Added by GitHub
+evyros/instagram-ui
+Language
+JavaScript
+Last updated
+3 minutes ago
+Added by GitHub
+
+
+Evyatar Rosner  5:07 PM
+https://realclass.io/room/5khd0p62n
+
+
+Evyatar Rosner  6:48 PM
+https://realclass.io/room/qrpnf69in
+
+
+Nicole Tsingauz  5:39 PM
+	useEffect(() => {
+		setHasLiked(likes.includes(user._id))
+	}, [user, likes]);
+5:39
+PostLike
+
+
+Shahar Shwartz  7:27 PM
+import React, { useContext, useEffect, useState } from 'react';
+import { UserContext } from '../../App';
+import Avatar from '../../common/Avatar/Avatar';
+import { follow, getUser, unfollow, me as getMyself } from '../../services/user.service';
+import './ProfileHeader.scss';
+
+function ProfileHeader({ username, postNum }) {
+	const { user: me, setUser: setMe } = useContext(UserContext);
+	const [user, setUser] = useState({});
+	const [isFollowing, setIsFollowing] = useState(me?.following?.includes(user._id));
+	
+	const handleFollow = () => {
+		// setIsFollowing(true);
+		follow(username).then(() => {
+			getMyself()
+            .then(loggedUser => {
+                setMe(loggedUser);
+            })
+		}).catch(() => setIsFollowing(false));
+	}
+	const handleUnfollow = () => {
+		// setIsFollowing(false);
+		unfollow(username).then(() => {
+			getMyself()
+            .then(loggedUser => {
+                setMe(loggedUser);
+            })
+		}).catch(() => setIsFollowing(true));
+	}
+
+	useEffect(() => {
+		setIsFollowing(me?.following?.includes(user._id));
+	}, [user, me]);
+
+	useEffect(() => {
+		async function initUser() {
+			const user = await getUser(username);
+			setUser(user);
+		}
+		initUser();
+	}, [username]);
+	console.log(isFollowing)
+	return (
+		<div className="profile__header">
+			<div className="profile__avatar"><Avatar image={user.image} size="lg" /></div>
+			<div>
+				<h2>{user.username}</h2>
+				<p>{postNum} posts</p>
+				{me.username !== username ? isFollowing 
+				? <button onClick={handleUnfollow}>Unfollow</button> 
+				: <button onClick={handleFollow}>Follow</button> : null}
+			</div>
+		</div>
+	);
+}
+
+export default ProfileHeader;
+
+
+Shahar Shwartz  7:01 PM
+get cropped image
+export function getCroppedImg(image, crop, fileName) {
+  const canvas = document.createElement("canvas");
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+  canvas.width = crop.width;
+  canvas.height = crop.height;
+  const ctx = canvas.getContext("2d");
+
+  // New lines to be added
+  const pixelRatio = window.devicePixelRatio;
+  canvas.width = crop.width * pixelRatio;
+  canvas.height = crop.height * pixelRatio;
+  ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+  ctx.imageSmoothingQuality = "high";
+
+  ctx.drawImage(
+    image,
+    crop.x * scaleX,
+    crop.y * scaleY,
+    crop.width * scaleX,
+    crop.height * scaleY,
+    0,
+    0,
+    crop.width,
+    crop.height
+  );
+
+  // As Base64 string
+  // const base64Image = canvas.toDataURL("image/jpeg");
+  // return base64Image;
+
+  // As a blob
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        blob.name = fileName;
+        resolve(blob);
+      },
+      "image/jpeg",
+      1
+    );
+  });
+}
+
+
+Evyatar Rosner  5:02 PM
+.
+5:02
+.
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+5:02
+https://realclass.io/room/3n6d6q372
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Ran Malki  8:57 PM
+https://github.com/evyros/fe-interview-questions
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Alon Sela  8:58 PM
+מקבל 404
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Evyatar Rosner  12:43 AM
+תוקן
+:slightly_smiling_face:
+2
+
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Shahar Shwartz  6:10 PM
+https://realclass.io/room/0mdg6pnpw
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Evyatar Rosner  5:07 PM
+.
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+5:07
+.
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+5:07
+https://realclass.io/room/n6kqvaf5r
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Evyatar Rosner  6:31 PM
+https://devcenter.heroku.com/articles/getting-started-with-nodejs#set-up
+devcenter.heroku.comdevcenter.heroku.com
+Getting Started on Heroku with Node.js | Heroku Dev Center
+A step-by-step guide for deploying your first Node app and mastering the basics of Heroku
+white_check_mark
+eyes
+raised_hands
+
+
+
+
+
+
+
+Evyatar Rosner  8:08 PM
+https://blog.heroku.com/deploying-react-with-zero-configuration
+blog.heroku.com
+Deploying React with Zero Configuration
+So you want to build an app with React? "Getting started" is easy… and then what? React is a library for building user interfaces, which comprise only o
